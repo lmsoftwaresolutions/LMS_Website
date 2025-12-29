@@ -2,8 +2,7 @@ version: "3.9"
 
 services:
   frontend:
-    build:
-      context: ./frontend
+    build: ./frontend
     container_name: lms-frontend
     restart: unless-stopped
     environment:
@@ -13,10 +12,12 @@ services:
     networks:
       - proxy
       - internal
+    # expose optional
+    expose:
+      - "80"
 
   backend:
-    build:
-      context: ./backend
+    build: ./backend
     container_name: lms-backend
     restart: unless-stopped
     environment:
