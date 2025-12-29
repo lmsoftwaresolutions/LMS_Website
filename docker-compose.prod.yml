@@ -1,42 +1,44 @@
 version: "3.9"
 
-networks:
-  proxy:
-    external: true
-  lms_net:
-
 services:
-  backend:
-    build: ./backend
-    restart: always
-    environment:
-      - MONGO_URI=${MONGO_URI}
-      - DB_NAME=${DB_NAME}
-    depends_on:
-      - mongo
-    networks:
-      - lms_net
-
   frontend:
-    build: ./frontend
-    restart: always
+    build:
+      context: ./frontend
+    container_name: lms-frontend
+    restart: unless-stopped
     environment:
-      VIRTUAL_HOST: ${DOMAIN},www.${DOMAIN}
-      LETSENCRYPT_HOST: ${DOMAIN},www.${DOMAIN}
-      LETSENCRYPT_EMAIL: admin@${DOMAIN}
-    depends_on:
-      - backend
+      VIRTUAL_HOST: successscienceacademy.com,www.successscienceacademy.com
+      LETSENCRYPT_HOST: successscienceacademy.com,www.successscienceacademy.com
+      LETSENCRYPT_EMAIL: admin@successscienceacademy.com
     networks:
       - proxy
-      - lms_net
+      - internal
+
+  backend:
+    build:
+      context: ./backend
+    container_name: lms-backend
+    restart: unless-stopped
+    environment:
+      MONGO_URI: mongodb://mongo:27017
+      DB_NAME: lms
+    networks:
+      - internal
 
   mongo:
     image: mongo:6.0
+    container_name: lms-mongo
     restart: unless-stopped
     volumes:
       - mongo-data:/data/db
     networks:
-      - lms_net
+      - internal
 
 volumes:
   mongo-data:
+
+networks:
+  proxy:
+    external: true
+  internal:
+    driver: bridge
